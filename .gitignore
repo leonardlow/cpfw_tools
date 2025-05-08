@@ -1,0 +1,16 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Logs
+*.log
+
+# Environments
+.env
+.venv/
+venv/
+
+# OS files
+.DS_Store
+Thumbs.db
