@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Results</title>
+</head>
+<body>
+    <h1>Command Execution Results</h1>
+    {% for hostname, result in results.items() %}
+        <h2>Results for {{ hostname }}:</h2>
+        <pre>{{ result }}</pre>
+    {% endfor %}
+    <a href="/">Back</a>
+</body>
+</html>

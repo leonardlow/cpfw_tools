@@ -1,0 +1,4 @@
+add user hpna uid 0 homedir /home/hpna
+add rba user hpna roles adminRole
+set user hpna gid 0 shell /bin/bash
+set user hpna realname "Hpna"

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CPFW: get info</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .form-section, .results-section { padding: 20px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 20px; }
+        .divider { height: 2px; background-color: #ccc; margin: 20px 0; }
+        h2 { color: #333; }
+        pre { background-color: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .host-section { margin-bottom: 20px; }
+        .command-section { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CPFW: get info</h1>
+        <!-- Form Section -->
+        <div class="form-section">
+            {% if not session.username or not session.password %}
+            <form method="POST" action="/set_credentials">
+                <label for="username">SSH Username:</label>
+                <input type="text" id="username" name="username" required>
+                <br>
+                <label for="password">SSH Password:</label>
+                <input type="password" id="password" name="password" required>
+                <br>
+                <label for="hosts">Enter Hosts (comma-separated):</label>
+                <input type="text" id="hosts" name="hosts" required>
+                <br>
+                <button type="submit">Set Credentials</button>
+            </form>
+            {% else %}
+            <form method="POST" action="/execute">
+                <label for="command">Select Command:</label>
+                <select id="command" name="command" multiple>
+                    <option value="mplane">Set MDPS (mplane)</option>
+                    <option value="dplane">Set MDPS (dplane)</option>
+                    <option value="./gw_chk.sh">GW check</option>
+                    <option value="./fw_health_check.sh cron">Health Check</option>
+                    <option value="clish -c 'show configuration static-route'">Get v4 Route Table</option>
+                    <option value="clish -c 'show configuration static-route' | wc -l">Get v4 Route Count</option>
+                    <option value="clish -c 'show configuration ipv6 static-route'">Get v6 Route Table</option>
+                    <option value="clish -c 'show configuration ipv6 static-route' | wc -l">Get v6 Route Count</option>
+                    <option value="clish -c 'show asset all' | grep -e 'Model' -e 'Serial' | head -n +2">Get Model/Serial#</option>
+                    <option value="ifconfig Mgmt | grep -i hwa | awk '{print $5}'">Get MAC Add</option>
+                    <option value="clish -c 'show configuration interface' | grep -e 'eth1-01' -e 'eth1-02'">Get Interfaces</option>
+                    <option value="cpinfo -y all | head -n 8 | sed 's/\\[[^]]*\\]//g' | grep -i take | sort -u">Get Code Ver</option>
+                    <option value="fw stat | grep localhost | awk '{print $2}'">Get Installed Policy</option>
+                    <option value="cphaprob stat | grep local | awk '{print $5}'">Get Cluster Member Status</option>
+                    <option value="fw tab -t connections -s | grep localhost | awk '{print $4}'">Get Current Connections</option>
+                    <option value="cpstat os -f multi_cpu | head -n 15">Get CPU Info</option>
+                    <option value="cplic print">Get License Info</option>
+                </select>
+                <br>
+                <button type="submit">Execute</button>
+            </form><br>
+            <form method="POST" action="/reset">
+                <button type="submit">Reset Form</button>
+            </form>
+            {% endif %}
+        </div>
+        <!-- Results Section -->
+        <div class="divider"></div>
+        {% if results %}
+        <div class="results-section">
+            <h2>Command Execution Results:</h2>
+            {% for hostname, host_results in results.items() %}
+            <div class="host-section">
+                <h3>Results for {{ hostname }}:</h3>
+                {% for command, result in host_results.items() %}
+                <div class="command-section">
+                    <!--<h4>{{ command }}:</h4> -->
+                    <pre>{{ result }}</pre>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

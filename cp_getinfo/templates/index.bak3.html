@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CPFW: get info</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f6f8fa;
+        color: #333;
+    }
+    .container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #1a202c;
+    }
+    .form-section, .results-section {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+    }
+    label {
+        display: block;
+        margin-top: 15px;
+        font-weight: 600;
+    }
+    input[type="text"], input[type="password"], textarea, select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+    }
+    button {
+        margin-top: 20px;
+        background-color: #2b6cb0;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+    button:hover {
+        background-color: #2c5282;
+    }
+    .divider {
+        height: 1px;
+        background-color: #e2e8f0;
+        margin: 40px 0;
+    }
+    .host-section {
+        margin-bottom: 30px;
+    }
+    pre {
+        background-color: #f1f5f9;
+        padding: 15px;
+        border-radius: 8px;
+        overflow-x: auto;
+    }
+</style>
+
+</head>
+<body>
+    <div class="container">
+        <h1>CPFW: get info</h1>
+        <!-- Form Section -->
+        <div class="form-section">
+            {% if not session.username or not session.password %}
+			<form method="POST" action="/set_credentials">
+			 <label for="username">SSH Username:</label>
+			 <input type="text" id="username" name="username" required>
+			 <br>
+			 <label for="password">SSH Password:</label>
+			 <input type="password" id="password" name="password" required>
+			 <br>
+			 <label for="hosts">Enter Hosts (one per line):</label>
+			 <textarea id="hosts" name="hosts" rows="5" cols="30" required></textarea>
+			 <br>
+			 <button type="submit">Set Credentials</button>
+			</form>
+            {% else %}
+			<form method="POST" action="/execute">
+				<label for="command">Select Command(s):</label>
+				<select id="command" name="command" multiple>
+					<!-- Options will be added dynamically -->
+				</select>
+				<br>
+				<button type="submit">Execute</button>
+			</form>
+			<br>
+			<form method="POST" action="/reset">
+				<button type="submit">Reset Form</button>
+			</form>
+
+			<script>
+				const commands = [
+					{ value: "mplane", text: "Set MDPS (mplane)" },
+					{ value: "dplane", text: "Set MDPS (dplane)" },
+					{ value: "clish -c 'show configuration snmp' | grep -i usm | awk '{print $5}'", text: "Get SNMP User" },
+					{ value: "./gw_chk.sh", text: "GW check" },
+					{ value: "./fw_health_check.sh cron", text: "Health Check" },
+					{ value: "clish -c 'show configuration static-route'", text: "Get v4 Route Table" },
+					{ value: "clish -c 'show configuration static-route' | wc -l", text: "Get v4 Route Count" },
+					{ value: "clish -c 'show configuration ipv6 static-route'", text: "Get v6 Route Table" },
+					{ value: "clish -c 'show configuration ipv6 static-route' | wc -l", text: "Get v6 Route Count" },
+					{ value: "clish -c 'show asset all' | grep -e 'Model' -e 'Serial' | head -n +2", text: "Get Model/Serial#" },
+					{ value: "ifconfig Mgmt | grep -i hwa | awk '{print $5}'", text: "Get MAC Add" },
+					{ value: "clish -c 'show configuration interface' | grep -e 'eth1-01' -e 'eth1-02'", text: "Get Interfaces" },
+					{ value: "cpinfo -y all | head -n 8 | sed 's/\\[[^]]*\\]//g' | grep -i take | sort -u", text: "Get Code Ver" },
+					{ value: "fw stat | grep localhost | awk '{print $2}'", text: "Get Installed Policy" },
+					{ value: "cphaprob stat | grep local | awk '{print $5}'", text: "Get Cluster Member Status" },
+					{ value: "fw tab -t connections -s | grep localhost | awk '{print $4}'", text: "Get Current Connections" },
+					{ value: "cpstat os -f multi_cpu | head -n 15", text: "Get CPU Info" },
+					{ value: "cplic print", text: "Get License Info" }
+				];
+
+				const selectBox = document.getElementById('command');
+
+				commands.forEach(command => {
+					const option = document.createElement('option');
+					option.value = command.value;
+					option.text = command.text;
+					selectBox.appendChild(option);
+				});
+
+				// Adjust the size of the select box based on the number of options
+				selectBox.size = commands.length;
+			</script>
+
+            {% endif %}
+        </div>
+        <!-- Results Section -->
+        <div class="divider"></div>
+        {% if results %}
+        <div class="results-section">
+            <h2>Command Execution Results:</h2>
+            {% for hostname, host_results in results.items() %}
+            <div class="host-section">
+                <h3>Results for {{ hostname }}:</h3>
+                {% for command, result in host_results.items() %}
+                <div class="command-section">
+                    <!--<h4>{{ command }}:</h4> -->
+                    <pre>{{ result }}</pre>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

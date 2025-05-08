@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CPFW Dashboard</title>
+	<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='cpfw_favicon.ico') }}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+	<img src="{{ url_for('static', filename='cpfw.png') }}" alt="CPFW Logo" class="h-16 mx-auto mb-4">
+<h1 class="text-3xl font-bold text-center text-blue-700 mb-10">CPFW Dashboard</h1>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="border-b border-gray-200 mb-4">
+                <nav class="flex space-x-4" id="tabs-nav">
+                    <button class="tab-btn text-blue-600 border-b-2 border-blue-600 pb-2" data-tab="credentials">Credentials</button>
+                    <button class="tab-btn text-gray-600 hover:text-blue-600 pb-2" data-tab="commands">Commands</button>
+                    <button class="tab-btn text-gray-600 hover:text-blue-600 pb-2" data-tab="results">Results</button>
+                </nav>
+            </div>
+
+            <!-- Credentials Tab -->
+            <div class="tab-content" id="credentials">
+                {% if not session.username or not session.password %}
+                <form method="POST" action="/set_credentials" class="space-y-4">
+                    <div>
+                        <label for="username" class="block font-semibold">SSH Username:</label>
+                        <input type="text" id="username" name="username" required class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label for="password" class="block font-semibold">SSH Password:</label>
+                        <input type="password" id="password" name="password" required class="w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label for="hosts" class="block font-semibold">Enter Hosts (one per line):</label>
+                        <textarea id="hosts" name="hosts" rows="4" required class="w-full border rounded px-3 py-2"></textarea>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Set Credentials</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Commands Tab -->
+            <div class="tab-content hidden" id="commands">
+                {% if session.username and session.password %}
+                <form method="POST" action="/execute" class="space-y-4">
+                    <div>
+                        <label for="command" class="block font-semibold">Select Command(s):</label>
+                        <select id="command" name="command" multiple class="w-full border rounded px-3 py-2 h-96"></select>
+                    </div>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Execute</button>
+                </form>
+                <form method="POST" action="/reset" class="mt-4">
+                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Reset Form</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Results Tab -->
+            <div class="tab-content hidden" id="results">
+                {% if results %}
+                <div>
+                    <h2 class="text-xl font-semibold mb-4">Command Execution Results</h2>
+                    {% for hostname, host_results in results.items() %}
+                    <div class="mb-6">
+                        <h3 class="font-semibold text-blue-800 mb-2">Results for {{ hostname }}:</h3>
+                        {% for command, result in host_results.items() %}
+                        <pre class="bg-gray-200 p-4 rounded overflow-x-auto text-sm mb-2">{{ result }}</pre>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabButtons.forEach(b => b.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600'));
+                tabContents.forEach(tab => tab.classList.add('hidden'));
+
+                btn.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+                document.getElementById(btn.getAttribute('data-tab')).classList.remove('hidden');
+            });
+        });
+
+        const commands = [
+            { value: "mplane", text: "Set MDPS (mplane)" },
+            { value: "dplane", text: "Set MDPS (dplane)" },
+            { value: "clish -c 'show configuration snmp' | grep -i usm | awk '{print $5}'", text: "Get SNMP User" },
+            { value: "./gw_chk.sh", text: "GW check" },
+            { value: "./fw_health_check.sh cron", text: "Health Check" },
+            { value: "clish -c 'show configuration static-route'", text: "Get v4 Route Table" },
+            { value: "clish -c 'show configuration static-route' | wc -l", text: "Get v4 Route Count" },
+            { value: "clish -c 'show configuration ipv6 static-route'", text: "Get v6 Route Table" },
+            { value: "clish -c 'show configuration ipv6 static-route' | wc -l", text: "Get v6 Route Count" },
+            { value: "clish -c 'show asset all' | grep -e 'Model' -e 'Serial' | head -n +2", text: "Get Model/Serial#" },
+            { value: "ifconfig Mgmt | grep -i hwa | awk '{print $5}'", text: "Get MAC Add" },
+            { value: "clish -c 'show configuration interface' | grep -e 'eth1-01' -e 'eth1-02'", text: "Get Interfaces" },
+            { value: "cpinfo -y all | head -n 8 | sed 's/\[[^]]*\]//g' | grep -i take | sort -u", text: "Get Code Ver" },
+            { value: "fw stat | grep localhost | awk '{print $2}'", text: "Get Installed Policy" },
+            { value: "cphaprob stat | grep local | awk '{print $5}'", text: "Get Cluster Member Status" },
+            { value: "fw tab -t connections -s | grep localhost | awk '{print $4}'", text: "Get Current Connections" },
+            { value: "cpstat os -f multi_cpu | head -n 15", text: "Get CPU Info" },
+            { value: "cplic print", text: "Get License Info" }
+        ];
+
+        const selectBox = document.getElementById('command');
+        if (selectBox) {
+            commands.forEach(command => {
+                const option = document.createElement('option');
+                option.value = command.value;
+                option.text = command.text;
+                selectBox.appendChild(option);
+            });
+        }
+    </script>
+</body>
+</html>
