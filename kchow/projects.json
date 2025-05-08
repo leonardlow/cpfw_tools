@@ -1,0 +1,12 @@
+{
+    "projects": [
+        {
+            "name": "project1",
+            "template": "index1.html"
+        },
+        {
+            "name": "project2",
+            "template": "getinfo.html"
+        }
+    ]
+}

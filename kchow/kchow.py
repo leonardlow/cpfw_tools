@@ -1,11 +1,13 @@
-import json
-from flask import Flask, render_template, request, jsonify
-import paramiko
 import os
-import logging
 import glob
+import json
+import logging
+import paramiko
+import webbrowser
+import threading
+from flask import Flask, render_template, request, jsonify
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates', static_folder='static')
 
 def create_ssh_client(hostname, username, password):
     client = paramiko.SSHClient()
@@ -13,10 +15,9 @@ def create_ssh_client(hostname, username, password):
     client.connect(hostname, username=username, password=password)
     return client
 
-
 @app.route('/')
 def index():
-    return render_template('index1.html', log_content=None)
+    return render_template('kchow.html', log_content=None)
 
 @app.route('/directories')
 def directories():
@@ -50,8 +51,6 @@ def execute():
     error_checking = 'error_checking' in request.form
 
     hostname_list = [h.strip() for h in hostnames.strip().splitlines() if h.strip()]
-
-    # Set up logging
     logging.basicConfig(filename='script.log', level=logging.INFO)
     logger = logging.getLogger()
 
@@ -68,7 +67,6 @@ def execute():
                 sftp.mkdir(remote_dir)
                 logger.info(f"Created directory {remote_dir} on {hostname}")
 
-            # List all files in the local directory
             try:
                 files = os.listdir(local_path)
             except FileNotFoundError:
@@ -79,12 +77,10 @@ def execute():
                 local_file_path = os.path.join(local_path, file_name)
                 remote_file_path = os.path.join(remote_path, file_name)
 
-                # Check if local file exists and is a file (not a directory)
                 if not os.path.isfile(local_file_path):
                     logger.error(f"{local_file_path} is not a file")
                     continue
 
-                # Log before attempting to copy
                 logger.info(f"Attempting to copy {local_file_path} to {remote_file_path} on {hostname}")
                 try:
                     sftp.put(local_file_path, remote_file_path)
@@ -93,7 +89,6 @@ def execute():
                     if error_checking:
                         logger.error(f"Failed to copy {local_file_path} to {remote_file_path} on {hostname}: {str(e)}")
 
-            # Make the remote script executable
             ssh_client.exec_command(f'chmod +x {remote_script_path}')
             logger.info(f"Changed permissions for {remote_script_path} to make it executable on {hostname}")
 
@@ -112,16 +107,12 @@ def execute():
     with open('script.log', 'r') as log:
         log_content = log.read()
 
-    return render_template('index1.html', log_content=log_content)
+    return render_template('kchow.html', log_content=log_content)
 
-# Load project configurations
-with open('projects.json') as f:
-    projects = json.load(f)['projects']
-
-# Dynamically create routes for each project
-for project in projects:
-    app.add_url_rule(f"/{project['name']}", project['name'], lambda template=project['template']: render_template(template))
+def open_browser():
+    webbrowser.open_new("http://localhost:5000")
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
-    
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":  # Only true in reloader's subprocess
+        threading.Timer(1.0, open_browser).start()
+    app.run(debug=True, port=5000)
