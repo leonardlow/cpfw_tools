@@ -1,7 +1,7 @@
 {
   "name": "kchow-ui",
   "version": "0.1.0",
-  "homepage": "https://leonardlow.github.io/web_dashboard/kchow",
+  "homepage": "https://leonardlow.github.io/cpfw_tools",
   "private": true,
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
