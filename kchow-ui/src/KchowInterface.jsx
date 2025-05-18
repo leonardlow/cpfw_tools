@@ -269,7 +269,7 @@ export default function KchowInterface() {
   return (
     <div className="p-6" tabIndex={-1}>
       <img
-        src={`${process.env.PUBLIC_URL}/images/kchow.png`}
+        src={`${process.env.PUBLIC_URL}/images/gw_builder.png`}
         alt="KCHOW Logo"
         className="h-40 mx-auto mb-10"
       />
