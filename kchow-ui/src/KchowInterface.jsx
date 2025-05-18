@@ -11,7 +11,7 @@ export default function KchowInterface() {
   const [baseText, setBaseText] = useState("");
 
   useEffect(() => {
-    fetch("/baseText.txt")
+    fetch(`${process.env.PUBLIC_URL}/baseText.txt`)
       .then((res) => res.text())
       .then((text) => setBaseText(text))
       .catch((err) => {
