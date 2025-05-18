@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/cpfw_tools/static/css/main.1545278f.css",
-    "main.js": "/cpfw_tools/static/js/main.db52230c.js",
+    "main.js": "/cpfw_tools/static/js/main.07fa4275.js",
     "static/js/453.27daedb1.chunk.js": "/cpfw_tools/static/js/453.27daedb1.chunk.js",
     "index.html": "/cpfw_tools/index.html",
     "main.1545278f.css.map": "/cpfw_tools/static/css/main.1545278f.css.map",
-    "main.db52230c.js.map": "/cpfw_tools/static/js/main.db52230c.js.map",
+    "main.07fa4275.js.map": "/cpfw_tools/static/js/main.07fa4275.js.map",
     "453.27daedb1.chunk.js.map": "/cpfw_tools/static/js/453.27daedb1.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.1545278f.css",
-    "static/js/main.db52230c.js"
+    "static/js/main.07fa4275.js"
   ]
 }
