@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/web_dashboard/kchow/static/css/main.1545278f.css",
+    "main.js": "/web_dashboard/kchow/static/js/main.a6ea2b9f.js",
+    "static/js/453.27daedb1.chunk.js": "/web_dashboard/kchow/static/js/453.27daedb1.chunk.js",
+    "index.html": "/web_dashboard/kchow/index.html",
+    "main.1545278f.css.map": "/web_dashboard/kchow/static/css/main.1545278f.css.map",
+    "main.a6ea2b9f.js.map": "/web_dashboard/kchow/static/js/main.a6ea2b9f.js.map",
+    "453.27daedb1.chunk.js.map": "/web_dashboard/kchow/static/js/453.27daedb1.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1545278f.css",
+    "static/js/main.a6ea2b9f.js"
+  ]
+}

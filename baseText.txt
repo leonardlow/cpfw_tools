@@ -1,0 +1,134 @@
+set message banner on
+set message banner on msgvalue "This system is for the use of authorized users only!!!!!"
+set message banner on line msgvalue "Individuals using this computer system without authority, or in"
+set message banner on line msgvalue "excess of their authority, are subject to having all of their"
+set message banner on line msgvalue "activities on this system monitored and recorded by system personnel."
+
+set message banner on line msgvalue "In the course of monitoring individuals improperly using this"
+set message banner on line msgvalue "system, or in the course of system maintenance, the activities"
+set message banner on line msgvalue "of authorized users may also be monitored."
+set message banner on line msgvalue "Anyone using this system expressly consents to such monitoring"
+set message banner on line msgvalue "and is advised that if such monitoring reveals possible"
+set message banner on line msgvalue "evidence of criminal activity, system personnel may provide the"
+set message banner on line msgvalue "evidence of such monitoring to law enforcement officials."
+set message motd off
+set message caption off
+
+#DNS 
+set dns mode default
+set dns suffix mgmt
+set dns primary 10.251.21.199
+set dns secondary 10.252.68.199
+
+#format date 
+set format date dd-mmm-yyyy
+set format time 24-hour
+set format netmask Dotted
+
+#declare mgmt
+set management interface Mgmt
+
+#ntp 
+set ntp active on
+set ntp server primary 10.251.4.4 version 4
+set ntp server secondary 10.252.4.4 version 4
+set timezone Etc / GMT
+
+#proxy & pw controls 
+set proxy address proxy-nmnet port 8008
+set password-controls min-password-length 6
+set password-controls complexity 2
+set password-controls palindrome-check true
+set password-controls history-checking false
+set password-controls history-length 10
+set password-controls password-expiration never
+set password-controls expiration-warning-days 7
+set password-controls expiration-lockout-days never
+set password-controls force-change-when no
+set password-controls deny-on-nonuse enable false
+set password-controls deny-on-nonuse allowed-days 365
+set password-controls deny-on-fail enable false
+set password-controls deny-on-fail failures-allowed 10
+set password-controls deny-on-fail allow-after 1200
+set password-controls deny-on-fail block-admin false
+set password-controls password-hash-type SHA512
+
+#rba 
+ add rba role TACP-15 domain-type System readwrite-features aaa-servers,arp,asset,backup,blades,clock-date,cluster_ha,configuration,core-dump,cron,dns,expert,ext_cpconfig,ext_cphaprob,ext_cphastart,ext_cphastop,ext_cpinfo,ext_cplic,ext_cpstart,ext_cpstat,ext_cpstop,ext_cpview,ext_cpwd_admin,ext_diag,ext_fw,ext_fwaccel,ext_fwm,ext_ifconfig,ext_ips,ext_netstat,ext_ping,ext_ping6,ext_raid_diagnostic,ext_raidconfig,ext_sim,ext_top,ext_traceroute,ext_vsx_util,ftw,hostname,installer,interface,license,ntp,perf
+
+ add rba role TACP-0 domain-type System readwrite-features ext_cphaprob,ext_cpinfo,ext_cplic,ext_cpview,ext_diag,ext_fwaccel,ext_fwm,ext_ifconfig,ext_netstat,ext_ping,ext_ping6,ext_raid_diagnostic,ext_raidconfig,ext_top,ext_traceroute,tacacs_enable
+
+ add rba role TACP-0 domain-type System readonly-features arp,asset,blades,clock-date,cluster_ha,configuration,core-dump,dns,installer,interface,license,ntp,raid-monitor,route,snmp,static-route,sysconfig,version
+
+ add rba role TACP-0 virtual-system-access all
+
+ add rba role TACP-15 domain-type System readwrite-features aaa-servers,arp,asset,backup,blades,clock-date,cluster_ha,configuration,core-dump,cron,dns,expert,ext_cpconfig,ext_cphaprob,ext_cphastart,ext_cphastop,ext_cpinfo,ext_cplic,ext_cpstart,ext_cpstat,ext_cpstop,ext_cpview,ext_cpwd_admin,ext_diag,ext_fw,ext_fwaccel,ext_fwm,ext_ifconfig,ext_ips,ext_netstat,ext_ping,ext_ping6,ext_raid_diagnostic,ext_raidconfig,ext_sim,ext_top,ext_traceroute,ext_vsx_util,ftw,hostname,installer,interface,license,ntp,perf
+
+ add rba role TACP-15 domain-type System readwrite-features prod-maintain,asset,raid-monitor,route,snmp,static-route,sysconfig,upgrade,version,vsx
+
+#add users 
+add user hpna uid 0 homedir /home/hpna
+add rba user hpna roles adminRole
+set user hpna gid 0 shell /bin/bash
+set user hpna realname "Hpna"
+
+#snapshot config *note: actual schedule to be done by DA team*
+set snapshot-scheduled activation enabled
+set snapshot-scheduled retention-policy max-snapshots-to-keep 2
+set snapshot-scheduled retention-policy min-snapshots-to-keep 1
+set snapshot-scheduled retention-policy keep-disk-space-above-in-GB 35.20
+set snapshot-scheduled recurrence daily time 10:31
+
+#syslog
+add syslog log-remote-address 10.253.182.93  level all
+add syslog log-remote-address 10.255.160.63  level all
+set syslog filename /var/log/messages
+set syslog cplogs off
+set syslog mgmtauditlogs on
+set syslog auditlog permanent
+set syslog uncompressmessages off
+add syslog log-remote-address 10.253.182.93  level all
+add syslog log-remote-address 10.255.160.63  level all
+
+#snmp 
+set snmp mode default
+set snmp agent on
+set snmp agent-version v3-Only
+add snmp traps receiver 10.236.18.5 version v3
+add snmp traps receiver 10.236.18.8 version v3
+add snmp traps receiver 10.246.89.85 version v3
+add snmp traps receiver 10.247.93.19 version v3
+add snmp traps receiver 10.252.195.14 version v3
+add snmp traps receiver 10.252.195.15 version v3
+add snmp traps receiver 10.254.199.16 version v3
+add snmp traps receiver 10.254.199.17 version v3
+set snmp traps trap authorizationError enable
+set snmp traps trap biosFailure enable
+set snmp traps trap clusterXLFailover enable
+set snmp traps trap coldStart enable
+set snmp traps trap configurationChange disable
+set snmp traps trap configurationSave disable
+set snmp traps trap fanFailure enable
+set snmp traps trap highVoltage enable
+set snmp traps trap linkUpLinkDown enable
+set snmp traps trap lowDiskSpace enable
+set snmp traps trap lowDiskSpaceAllPartitions disable
+set snmp traps trap lowVoltage enable
+set snmp traps trap overTemperature enable
+set snmp traps trap powerSupplyFailure enable
+set snmp traps trap raidVolumeState enable
+set snmp traps trap vrrpv2AuthFailure disable
+set snmp traps trap vrrpv2NewMaster disable
+set snmp traps trap vrrpv3NewMaster disable
+set snmp traps trap vrrpv3ProtoError disable
+set snmp traps polling-frequency 60
+set snmp contact "Tier2 security operations 1-888-662-4662"
+
+aaa:
+set aaa tacacs-servers state on
+set aaa tacacs-servers user-uid 0
+set aaa radius-servers super-user-uid 96
+
+#disable web access
+set web daemon-enable off
+save config
